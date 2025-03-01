@@ -16,6 +16,7 @@ function updateNodeStats() {
             document.getElementById('current_difficulty').innerHTML = data.current_difficulty;
             document.getElementById('active_peers').innerHTML = data.active_peers;
             document.getElementById('blockchain_size').innerHTML = data.blockchain_size;
+            document.getElementById('block_time').innerHTML = data.block_time;
       });
 }
 

@@ -17,11 +17,11 @@ current_difficulty = 0
 transactions = 0
 active_peers = 0
 blockchain_size = 0
+block_time = 0 
 
 w3 = Web3(Web3.HTTPProvider('http://192.168.1.22:8545'))
 w3_connected = w3.is_connected()
 print(w3_connected)
-
 
 
 def sys_stats():
@@ -41,6 +41,7 @@ def node_stats():
     global current_difficulty
     global active_peers
     global blockchain_size
+    global block_time
 
     while True:
         block = w3.eth.get_block('latest')
@@ -48,8 +49,25 @@ def node_stats():
         current_difficulty = block.difficulty
         active_peers = w3.net.peer_count
 
-        blockchain_size = blockchain_size = os.popen("du -sh ~/AploNode-data/geth | awk '{print $1}'").read().strip()
-        #print(current_block, current_difficulty, active_peers, blockchain_size)
+        blockchain_size = os.popen("du -sh ~/AploNode-data/geth | awk '{print $1}'").read().strip()
+        
+        block_time = block.timestamp
+        block_time = datetime.datetime.utcfromtimestamp(block_time)
+        print(current_block, current_difficulty, active_peers, blockchain_size, block_time)
+
+        last_blocks = []
+        for i in range(5):
+            block_data = w3.eth.get_block(current_block - i)
+            block_info = {
+                "number": block_data.number,
+                "timestamp": block_data.timestamp,
+                "time_utc": datetime.datetime.utcfromtimestamp(block_data.timestamp)
+                }
+            last_blocks.append(block_info)
+
+        for block in last_blocks:
+            print(f"Block #{block['number']} - Time: {block['time_utc']} UTC")
+
 
         time.sleep(1)
 
@@ -62,7 +80,6 @@ sys_stats_thread.start()
 node_stats_thread = threading.Thread(target=node_stats)
 node_stats_thread.daemon = True
 node_stats_thread.start()
-
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -81,7 +98,9 @@ def get_node_stats():
     global current_difficulty
     global active_peers
     global blockchain_size
-    return jsonify({'current_block': current_block, 'current_difficulty': current_difficulty, 'active_peers': active_peers, 'blockchain_size': str(blockchain_size)})
+    global block_time
+    return jsonify({'current_block': current_block, 'current_difficulty': current_difficulty, 'active_peers': active_peers, 
+                    'blockchain_size': str(blockchain_size), 'block_time': str(block_time)})
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Простой счетчик</title>
+    <title>Aplo Node Web Interface</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
@@ -16,6 +16,8 @@
     <h1>Current Difficulty: <span id="current_difficulty"> {{current_difficulty}}</span></h1>
     <h1>Active Peers: <span id="active_peers"> {{active_peers}}</span></h1>
     <h1>Blockchain Size: <span id="blockchain_size"> {{blockchain_size}}</span></h1>
+    <h1>Block time UTC+0: <span id="block_time"> {{block_time}}</span></h1>
+
 
 </body>
 </html>
