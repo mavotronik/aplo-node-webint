@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простой счетчик</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <h1>Счетчик: <span id="counter">{{ counter }}</span></h1>
+    <h1>Автоматический счетчик: <span id="auto-counter">{{ auto_counter }}</span></h1>
+    <h1>CPU: <span id="cpu">{{ cpu_stat }}</span></h1>
+    <h1>RAM: <span id="ram">{{ ram_stat }}</span></h1>
+    <h1>UPTIME: <span id="uptime">{{ uptime_stat }}</span></h1>
+
+    <button onclick="incrementCounter()">Увеличить счетчик</button>
+    <button onclick="decrementCounter()">Уменьшить счетчик</button>
+
+</body>
+</html>
