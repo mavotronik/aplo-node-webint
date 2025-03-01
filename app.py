@@ -4,19 +4,24 @@ import time
 import psutil
 import datetime
 
+from web3 import Web3, EthereumTesterProvider
+
 app = Flask(__name__)
 
-counter = 0
-auto_counter = 0
 cpu = 0
 ram = 0
 uptime = ""
+current_block = 0
+current_difficulty = 0
+transactions = 0
 
-def increment_auto_counter():
-    global auto_counter
-    while True:
-        auto_counter += 1
-        time.sleep(1)
+
+
+w3 = Web3(Web3.HTTPProvider('http://192.168.1.22:8545'))
+w3_connected = w3.is_connected()
+print(w3_connected)
+
+
 
 def sys_stats():
     global cpu
@@ -30,38 +35,40 @@ def sys_stats():
 
         uptime = datetime.timedelta(seconds=time.time() - psutil.boot_time())
         
-
         time.sleep(1)
 
-auto_counter_thread = threading.Thread(target=increment_auto_counter)
-auto_counter_thread.daemon = True # Чтобы поток завершался вместе с основным потоком
-auto_counter_thread.start()
+def node_stats():
+    global current_block
+    global current_difficulty
+    global transactions
+    while True:
+        block = w3.eth.get_block('latest')
+        current_block = block.number
+        current_difficulty = block.difficulty
+
+        print(current_block, current_difficulty)
+        time.sleep(2)
+
+
+
 sys_stats_thread = threading.Thread(target=sys_stats)
 sys_stats_thread.daemon = True
 sys_stats_thread.start()
 
+node_stats_thread = threading.Thread(target=node_stats)
+node_stats_thread.daemon = True
+node_stats_thread.start()
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    global counter
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'increment':
-           counter += 1
-        elif action == 'decrement' and counter > 0:
-           counter -= 1
-    return render_template('index.html', counter=counter, auto_counter=auto_counter)
+    return render_template('index.html')
 
 @app.route('/get_counter', methods=['GET'])
 def get_counter():
     global counter
     return jsonify({'counter': counter})
 
-
-@app.route('/get_auto_counter', methods=['GET'])
-def get_auto_counter():
-    global auto_counter
-    return jsonify({'auto_counter': auto_counter})
 
 @app.route('/get_sys_stats', methods=['GET'])
 def get_sys_stats():
