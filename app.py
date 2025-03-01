@@ -3,6 +3,7 @@ import threading
 import time
 import psutil
 import datetime
+import os
 
 from web3 import Web3, EthereumTesterProvider
 
@@ -14,8 +15,8 @@ uptime = ""
 current_block = 0
 current_difficulty = 0
 transactions = 0
-
-
+active_peers = 0
+blockchain_size = 0
 
 w3 = Web3(Web3.HTTPProvider('http://192.168.1.22:8545'))
 w3_connected = w3.is_connected()
@@ -29,25 +30,28 @@ def sys_stats():
     global uptime
     while True: 
         cpu = psutil.cpu_percent()
-
         ram = psutil.virtual_memory()
         ram = float(ram.percent)
-
         uptime = datetime.timedelta(seconds=time.time() - psutil.boot_time())
         
-        time.sleep(1)
+        time.sleep(5)
 
 def node_stats():
     global current_block
     global current_difficulty
-    global transactions
+    global active_peers
+    global blockchain_size
+
     while True:
         block = w3.eth.get_block('latest')
         current_block = block.number
         current_difficulty = block.difficulty
+        active_peers = w3.net.peer_count
 
-        print(current_block, current_difficulty)
-        time.sleep(2)
+        blockchain_size = blockchain_size = os.popen("du -sh ~/AploNode-data/geth | awk '{print $1}'").read().strip()
+        #print(current_block, current_difficulty, active_peers, blockchain_size)
+
+        time.sleep(1)
 
 
 
@@ -64,18 +68,20 @@ node_stats_thread.start()
 def index():
     return render_template('index.html')
 
-@app.route('/get_counter', methods=['GET'])
-def get_counter():
-    global counter
-    return jsonify({'counter': counter})
-
-
 @app.route('/get_sys_stats', methods=['GET'])
 def get_sys_stats():
     global cpu
     global ram
     global uptime
     return jsonify({'cpu_stat': cpu, 'ram_stat': ram, 'uptime_stat': str(uptime)})
+
+@app.route('/get_node_stats', methods=['GET'])
+def get_node_stats():
+    global current_block
+    global current_difficulty
+    global active_peers
+    global blockchain_size
+    return jsonify({'current_block': current_block, 'current_difficulty': current_difficulty, 'active_peers': active_peers, 'blockchain_size': str(blockchain_size)})
 
 if __name__ == '__main__':
     app.run(debug=True)
