@@ -3,21 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplo Node Web Interface</title>
+    <title>Ethereum Node Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
-
-    <h1>CPU: <span id="cpu">{{ cpu_stat }}</span></h1>
-    <h1>RAM: <span id="ram">{{ ram_stat }}</span></h1>
-    <h1>UPTIME: <span id="uptime">{{ uptime_stat }}</span></h1>
-    <h1>Current Block: <span id="current_block"> {{current_block}}</span></h1>
-    <h1>Current Difficulty: <span id="current_difficulty"> {{current_difficulty}}</span></h1>
-    <h1>Active Peers: <span id="active_peers"> {{active_peers}}</span></h1>
-    <h1>Blockchain Size: <span id="blockchain_size"> {{blockchain_size}}</span></h1>
-    <h1>Block time UTC+0: <span id="block_time"> {{block_time}}</span></h1>
-
-
+    <div class="sys-stats">
+        <div id="cpu">CPU: --%</div>
+        <div id="ram">RAM: --%</div>
+        <div id="uptime">Uptime: --</div>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <h3>Last Blocks</h3>
+            <div id="lastBlocks"></div>
+        </div>
+        <div class="content">
+            <div class="block" id="currentBlock">Current Block: --</div>
+            <div class="metrics">
+                <div class="metric" id="difficulty">Difficulty: --</div>
+                <div class="metric" id="peers">Peers: --</div>
+                <div class="metric" id="size">Size: --</div>
+            </div>
+            <div class="block" id="blockTime">Last Block Time: --</div>
+        </div>
+    </div>
+    <footer>Footer</footer>
 </body>
 </html>

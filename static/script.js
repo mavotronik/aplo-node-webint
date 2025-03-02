@@ -1,25 +1,37 @@
-function updateSysStats() {
-    fetch('/get_sys_stats')
-        .then(response => response.json())
-         .then(data => {
-            document.getElementById('cpu').innerHTML = data.cpu_stat;
-            document.getElementById('ram').innerHTML = data.ram_stat;
-            document.getElementById('uptime').innerHTML = data.uptime_stat;
-      });
+async function fetchStats() {
+    const response = await fetch('/get_node_stats');
+    const data = await response.json();
+    document.getElementById('currentBlock').innerText = `Current Block: ${data.current_block}`;
+    document.getElementById('difficulty').innerText = `Difficulty: ${data.current_difficulty}`;
+    document.getElementById('peers').innerText = `Peers: ${data.active_peers}`;
+    document.getElementById('size').innerText = `Size: ${data.blockchain_size}`;
+    document.getElementById('blockTime').innerText = `Last Block Time: ${data.block_time}`;
 }
 
-function updateNodeStats() {
-    fetch('/get_node_stats')
-        .then(response => response.json())
-         .then(data => {
-            document.getElementById('current_block').innerHTML = data.current_block;
-            document.getElementById('current_difficulty').innerHTML = data.current_difficulty;
-            document.getElementById('active_peers').innerHTML = data.active_peers;
-            document.getElementById('blockchain_size').innerHTML = data.blockchain_size;
-            document.getElementById('block_time').innerHTML = data.block_time;
-      });
+async function fetchSysStats() {
+    const response = await fetch('/get_sys_stats');
+    const data = await response.json();
+    document.getElementById('cpu').innerText = `CPU: ${data.cpu_stat}%`;
+    document.getElementById('ram').innerText = `RAM: ${data.ram_stat}%`;
+    document.getElementById('uptime').innerText = `Uptime: ${data.uptime_stat}`;
 }
 
-// Обновление автоматического счетчика каждую секунду
-setInterval(updateSysStats, 1500);
-setInterval(updateNodeStats, 1000)
+async function fetchLastBlocks() {
+    const response = await fetch('/get_last_blocks');
+    const data = await response.json();
+    const lastBlocksContainer = document.getElementById('lastBlocks');
+    lastBlocksContainer.innerHTML = '';
+    data.forEach(block => {
+        const blockElement = document.createElement('div');
+        blockElement.className = 'block-item';
+        blockElement.innerText = `Block #${block.number}\nTime: ${block.time_utc}`;
+        lastBlocksContainer.appendChild(blockElement);
+    });
+}
+
+setInterval(fetchStats, 5000);
+setInterval(fetchSysStats, 5000);
+setInterval(fetchLastBlocks, 5000);
+fetchStats();
+fetchSysStats();
+fetchLastBlocks();

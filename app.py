@@ -5,7 +5,7 @@ import psutil
 import datetime
 import os
 
-from web3 import Web3, EthereumTesterProvider
+from web3 import Web3
 
 app = Flask(__name__)
 
@@ -53,24 +53,9 @@ def node_stats():
         
         block_time = block.timestamp
         block_time = datetime.datetime.utcfromtimestamp(block_time)
-        print(current_block, current_difficulty, active_peers, blockchain_size, block_time)
-
-        last_blocks = []
-        for i in range(5):
-            block_data = w3.eth.get_block(current_block - i)
-            block_info = {
-                "number": block_data.number,
-                "timestamp": block_data.timestamp,
-                "time_utc": datetime.datetime.utcfromtimestamp(block_data.timestamp)
-                }
-            last_blocks.append(block_info)
-
-        for block in last_blocks:
-            print(f"Block #{block['number']} - Time: {block['time_utc']} UTC")
-
+        #print(current_block, current_difficulty, active_peers, blockchain_size, block_time)
 
         time.sleep(1)
-
 
 
 sys_stats_thread = threading.Thread(target=sys_stats)
@@ -101,6 +86,21 @@ def get_node_stats():
     global block_time
     return jsonify({'current_block': current_block, 'current_difficulty': current_difficulty, 'active_peers': active_peers, 
                     'blockchain_size': str(blockchain_size), 'block_time': str(block_time)})
+
+@app.route('/get_last_blocks', methods=['GET'])
+def get_last_blocks():
+    last_blocks = []
+    latest_block = w3.eth.get_block('latest').number
+    for i in range(5):
+        block_data = w3.eth.get_block(latest_block - i)
+        block_info = {
+            "number": block_data.number,
+            "timestamp": block_data.timestamp,
+            "time_utc": str(datetime.datetime.utcfromtimestamp(block_data.timestamp))
+        }
+        last_blocks.append(block_info)
+    return jsonify(last_blocks)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
