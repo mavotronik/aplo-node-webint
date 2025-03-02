@@ -19,7 +19,7 @@ active_peers = 0
 blockchain_size = 0
 block_time = 0 
 
-w3 = Web3(Web3.HTTPProvider('http://192.168.1.22:8545'))
+w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
 w3_connected = w3.is_connected()
 print(w3_connected)
 
