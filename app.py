@@ -18,6 +18,12 @@ transactions = 0
 active_peers = 0
 blockchain_size = 0
 block_time = 0 
+prev_difficulty = 0
+prev_peers = 0
+prev_blockchain_size = "0B"
+difficulty_change = 0
+peers_change = 0
+size_change = "N/A"
 
 w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
 w3_connected = w3.is_connected()
@@ -37,11 +43,9 @@ def sys_stats():
         time.sleep(5)
 
 def node_stats():
-    global current_block
-    global current_difficulty
-    global active_peers
-    global blockchain_size
-    global block_time
+    global current_block, current_difficulty, active_peers, blockchain_size, block_time
+    global prev_difficulty, prev_peers, prev_blockchain_size
+    global difficulty_change, size_change, peers_change
 
     while True:
         block = w3.eth.get_block('latest')
@@ -53,9 +57,45 @@ def node_stats():
         
         block_time = block.timestamp
         block_time = datetime.datetime.utcfromtimestamp(block_time)
-        #print(current_block, current_difficulty, active_peers, blockchain_size, block_time)
+        print(f"Current block: {current_block}, Current Difficulty: {current_difficulty}, Active peers: {active_peers}, Blockchain Size: {blockchain_size}, Block Time: {block_time}")
 
+        # Calculate percent changes
+        if prev_difficulty > 0:
+            difficulty_change = ((current_difficulty - prev_difficulty) / prev_difficulty) * 100
+
+        if prev_peers > 0:
+            peers_change = ((active_peers - prev_peers) / prev_peers) * 100
+
+        # convert blockchain size
+        current_size_gb = convert_size_to_gb(blockchain_size)
+        prev_size_gb = convert_size_to_gb(prev_blockchain_size)
+
+        if prev_size_gb > 0:
+            size_change = ((current_size_gb - prev_size_gb) / prev_size_gb) * 100
+        else:
+            size_change = 0  # set change 0% if change 0 
+
+        # Update previous
+        prev_difficulty = current_difficulty
+        prev_peers = active_peers
+        prev_blockchain_size = blockchain_size
+
+        print(f"Difficulty change: {difficulty_change:.2f}%, Peers change: {peers_change:.2f}%, Size change: {size_change:.2f}%")
+        
         time.sleep(1)
+
+def convert_size_to_gb(size_str):
+
+    size_str = size_str.upper()
+    
+    if "G" in size_str:
+        return float(size_str.replace("G", ""))
+    elif "M" in size_str:
+        return float(size_str.replace("M", "")) / 1024
+    elif "T" in size_str:
+        return float(size_str.replace("T", "")) * 1024
+    else:
+        return 0
 
 
 sys_stats_thread = threading.Thread(target=sys_stats)
@@ -79,13 +119,17 @@ def get_sys_stats():
 
 @app.route('/get_node_stats', methods=['GET'])
 def get_node_stats():
-    global current_block
-    global current_difficulty
-    global active_peers
-    global blockchain_size
-    global block_time
-    return jsonify({'current_block': current_block, 'current_difficulty': current_difficulty, 'active_peers': active_peers, 
-                    'blockchain_size': str(blockchain_size), 'block_time': str(block_time)})
+    global current_block, current_difficulty, active_peers, blockchain_size, block_time
+    global difficulty_change, size_change, peers_change
+
+    return jsonify({'current_block': current_block, 
+                    'current_difficulty': current_difficulty, 
+                    'active_peers': active_peers, 
+                    'blockchain_size': str(blockchain_size), 
+                    'block_time': str(block_time),
+                    'difficulty_change': f"{difficulty_change:.2f}%",
+                    'size_change': f"{size_change:.2f}%",
+                    'peers_change': f"{peers_change:.2f}%"})
 
 @app.route('/get_last_blocks', methods=['GET'])
 def get_last_blocks():
