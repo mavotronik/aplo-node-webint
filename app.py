@@ -92,7 +92,8 @@ def node_stats():
 
 def convert_size_to_gb(size_str):
 
-    size_str = size_str.upper()
+    # size_str = size_str.upper()
+    size_str = size_str.replace(",", ".")
     
     if "G" in size_str:
         return float(size_str.replace("G", ""))
